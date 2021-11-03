@@ -44,7 +44,7 @@ namespace ErcotAPILib.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("API_Prism_2_EDFT_SQ26_2021_CERT.pfx")]
+        [global::System.Configuration.DefaultSettingValueAttribute("CERT.pfx")]
         public string ClientCertificateName {
             get {
                 return ((string)(this["ClientCertificateName"]));
@@ -53,7 +53,7 @@ namespace ErcotAPILib.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("JMf0tUSC1787!")]
+        [global::System.Configuration.DefaultSettingValueAttribute("password")]
         public string ClientCertificatePassword {
             get {
                 return ((string)(this["ClientCertificatePassword"]));
@@ -62,7 +62,7 @@ namespace ErcotAPILib.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("API_Prism2")]
+        [global::System.Configuration.DefaultSettingValueAttribute("userid")]
         public string ClientCertificateUserID {
             get {
                 return ((string)(this["ClientCertificateUserID"]));
@@ -71,7 +71,7 @@ namespace ErcotAPILib.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("API_Prism2")]
+        [global::System.Configuration.DefaultSettingValueAttribute("source")]
         public string Source {
             get {
                 return ((string)(this["Source"]));

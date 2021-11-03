@@ -9,16 +9,16 @@
       <Value Profile="(Default)">Certificate</Value>
     </Setting>
     <Setting Name="ClientCertificateName" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">API_Prism_2_EDFT_SQ26_2021_CERT.pfx</Value>
+      <Value Profile="(Default)">CERT.pfx</Value>
     </Setting>
     <Setting Name="ClientCertificatePassword" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">JMf0tUSC1787!</Value>
+      <Value Profile="(Default)">password</Value>
     </Setting>
     <Setting Name="ClientCertificateUserID" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">API_Prism2</Value>
+      <Value Profile="(Default)">userid</Value>
     </Setting>
     <Setting Name="Source" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">API_Prism2</Value>
+      <Value Profile="(Default)">source</Value>
     </Setting>
     <Setting Name="LMP_REPORT_STARTTIME_OFFSET_MINUTES" Type="System.Double" Scope="Application">
       <Value Profile="(Default)">-5</Value>
