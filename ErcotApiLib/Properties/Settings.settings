@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ErcotAPILib.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ErcotAPILib_ErcotNodalService_NodalService" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">https://misapi.ercot.com/2007-08/Nodal/eEDS/EWS/</Value>
+    </Setting>
+    <Setting Name="ClientCertificateDirectory" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Certificate</Value>
+    </Setting>
+    <Setting Name="ClientCertificateName" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">CERT.pfx</Value>
+    </Setting>
+    <Setting Name="ClientCertificatePassword" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">password</Value>
+    </Setting>
+    <Setting Name="ClientCertificateUserID" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">userid</Value>
+    </Setting>
+    <Setting Name="Source" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">source</Value>
+    </Setting>
+    <Setting Name="LMP_REPORT_STARTTIME_OFFSET_MINUTES" Type="System.Double" Scope="Application">
+      <Value Profile="(Default)">-5</Value>
+    </Setting>
+    <Setting Name="LMP_REPORT_ENDTIME_OFFSET_MINUTES" Type="System.Double" Scope="Application">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

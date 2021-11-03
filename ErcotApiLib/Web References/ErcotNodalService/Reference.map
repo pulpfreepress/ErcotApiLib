@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DiscoveryClientResultsFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Results>
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.SchemaReference" url="http://www.w3.org/2001/xml.xsd" filename="xml.xsd" />
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.SchemaReference" url="file:///C:/Projects/ErcotAPILib/trunk/ErcotAPILib/External_Web_Services_XSD_V1/WSS200401wssecurity-utility-10.xsd" filename="WSS200401wssecurity-utility-10.xsd" />
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.ContractReference" url="file:///C:/Projects/ErcotAPILib/trunk/ErcotAPILib/External_Web_Services_XSD_V1/Nodal.wsdl" filename="Nodal.wsdl" />
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.SchemaReference" url="file:///C:/Projects/ErcotAPILib/trunk/ErcotAPILib/External_Web_Services_XSD_V1/xmldsig-core-schema.xsd" filename="xmldsig-core-schema.xsd" />
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.SchemaReference" url="file:///C:/Projects/ErcotAPILib/trunk/ErcotAPILib/External_Web_Services_XSD_V1/WSS200401wssecurity-secext-10.xsd" filename="WSS200401wssecurity-secext-10.xsd" />
+    <DiscoveryClientResult referenceType="System.Web.Services.Discovery.SchemaReference" url="file:///C:/Projects/ErcotAPILib/trunk/ErcotAPILib/External_Web_Services_XSD_V1/Message.xsd" filename="Message.xsd" />
+  </Results>
+</DiscoveryClientResultsFile>
