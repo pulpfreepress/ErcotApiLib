@@ -20,6 +20,14 @@ namespace ErcotUnitTests
     [TestClass]
     public class MarketInfoTests
     {
+
+        [TestMethod]
+        public void GetSystemStatus() {
+            MarketInfo _marketInfo = new MarketInfo();
+            string replycode = _marketInfo.GetSystemStatus();
+            Assert.AreEqual(replycode, "OK");
+        }
+
         [TestMethod]
         public void GetLMPs()
         {

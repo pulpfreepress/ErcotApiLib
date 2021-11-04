@@ -1,28 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ErcotAPILib.ErcotNodalService;
-using ErcotAPILib.Utils;
+﻿using ErcotAPILib.ErcotNodalService;
 using ErcotAPILib.Exceptions;
-using System.Security.Cryptography.X509Certificates;
+using ErcotAPILib.Utils;
 using Microsoft.Web.Services3;
-using Microsoft.Web.Services3.Security.Tokens;
 using Microsoft.Web.Services3.Security;
+using Microsoft.Web.Services3.Security.Tokens;
+using System;
+using System.Collections.Generic;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Xml;
 
-namespace ErcotAPILib.MarketInfo
-{
-    public class MarketInfo : ApplicationBase
-    {
+namespace ErcotAPILib.MarketInfo {
+    public class MarketInfo : ApplicationBase {
 
 
         /***********************************************************************************************************
          * Constants
          * *********************************************************************************************************/
-        private readonly  string CLIENT_CERT_PATH = Environment.CurrentDirectory + @"\" +
+        private readonly string CLIENT_CERT_PATH = Environment.CurrentDirectory + @"\" +
                                                     Properties.Settings.Default.ClientCertificateDirectory + @"\" +
                                                     Properties.Settings.Default.ClientCertificateName;
 
@@ -32,7 +27,7 @@ namespace ErcotAPILib.MarketInfo
 
         private readonly string SOURCE = Properties.Settings.Default.Source;
 
-       
+
         private readonly double LMP_REPORT_STARTTIME_OFFSET_MINUTES = Properties.Settings.Default.LMP_REPORT_STARTTIME_OFFSET_MINUTES;
         private readonly double LMP_REPORT_ENDTIME_OFFSET_MINUTES = Properties.Settings.Default.LMP_REPORT_ENDTIME_OFFSET_MINUTES;
 
@@ -45,13 +40,13 @@ namespace ErcotAPILib.MarketInfo
          * ******************************************************************************************************/
         private NodalService _ercotClient;
         private X509Certificate2 _clientCert;
-      
+
         private SoapContext _context;
         private X509SecurityToken _token;
-      
+
         private List<Lmp> _lmpList;
 
-        private enum MarketInfoCallType { LMPs, Report };  // add more market call types in the future as required
+        private enum MarketInfoCallType { LMPs, Report, SystemStatus };  // add more market call types in the future as required
         private MarketInfoCallType _marketCallType;
 
 
@@ -59,8 +54,7 @@ namespace ErcotAPILib.MarketInfo
         /// <summary>
         /// Constructor
         /// </summary>
-        public MarketInfo() : base(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType)
-        {
+        public MarketInfo() : base(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType) {
 
             LogDebug("Initializing Service Proxy");
             this.InitializeServiceProxy();
@@ -70,27 +64,24 @@ namespace ErcotAPILib.MarketInfo
         /// <summary>
         /// InitializeServiceProxy
         /// </summary>
-        private void InitializeServiceProxy()
-        {
+        private void InitializeServiceProxy() {
 
             // Create NodalService proxy reference
             _ercotClient = new NodalService();
 
             // Load cert and sign SOAP message
-           
+
             LogDebug(CLIENT_CERT_PATH);
 
-            try
-            {
+            try {
                 _clientCert = new X509Certificate2(CLIENT_CERT_PATH, CLIENT_CERT_PASSWORD, X509KeyStorageFlags.MachineKeySet);
-            }catch(Exception e)
-            {
+            }
+            catch (Exception e) {
                 LogError(e);
                 throw new ErcotCertException("Problem creating X509Certificate. Verify certificates and check certificate path.", e);
             }
 
-            try
-            {
+            try {
                 LogDebug("adding _clientCert");
                 _ercotClient.ClientCertificates.Add(_clientCert);
 
@@ -104,8 +95,8 @@ namespace ErcotAPILib.MarketInfo
                 _context.Security.Tokens.Add(_token);
 
 
-               // LogDebug("here....");
-               _context.Security.Elements.Add(new MessageSignature(_token));
+                // LogDebug("here....");
+                _context.Security.Elements.Add(new MessageSignature(_token));
 
 
                 //Set TLS protocol
@@ -120,8 +111,7 @@ namespace ErcotAPILib.MarketInfo
                 // Handle service reply with a callback method
                 // _ercotClient.MarketInfoCompleted += this.ErcotClient_MarketInfoCompleted;
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 LogError(e);
             }
 
@@ -135,26 +125,21 @@ namespace ErcotAPILib.MarketInfo
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void ErcotClient_MarketInfoCompleted(object sender, MarketInfoCompletedEventArgs e)
-        {
+        private void ErcotClient_MarketInfoCompleted(object sender, MarketInfoCompletedEventArgs e) {
             LogDebug("MarketInfoAsync call completed...");
-            
-            try
-            {
+
+            try {
                 LogDebug("Reading MarketInfo ReplyCode...");
                 string reply = e.Result.Reply.ReplyCode;
                 LogDebug("Ercot Get " + e.Result.Header.Noun + " Response: " + reply);
                 LogDebug("Payload Format:" + e.Result.Payload.format);
                 LogDebug("Processing MarketInfo response payload...");
-               
-                //If we get this far, reply must be valid object!
-                if (e.Result.Payload.format.Equals("XML"))
-                {
 
-                    switch (_marketCallType)
-                    {
-                        case MarketInfoCallType.LMPs:
-                            {
+                //If we get this far, reply must be valid object!
+                if (e.Result.Payload.format.Equals("XML")) {
+
+                    switch (_marketCallType) {
+                        case MarketInfoCallType.LMPs: {
                                 ProcessLMPsCallResults(e.Result.Payload);
                                 break;
                             }
@@ -162,12 +147,11 @@ namespace ErcotAPILib.MarketInfo
                     }
 
 
-                   
+
                 }
 
             }
-            catch (Exception)
-            {
+            catch (Exception) {
 
                 LogError("Ercot Error Response: " + e.Error);
 
@@ -175,19 +159,54 @@ namespace ErcotAPILib.MarketInfo
 
         }
 
+        /// <summary>
+        /// Checks ERCOT Web Services System Status
+        /// </summary>
+        /// <returns>Reply-Code string: "OK" or "ERROR"</returns>
+        /// See page 339 of EIP External Interfaces Specification V1.20, 31 March 2021
+        public string GetSystemStatus() {
+            LogDebug("Calling GetSystemStatus() method...");
+            _marketCallType = MarketInfoCallType.SystemStatus;
+
+            try {
+                RequestMessageBuilder requestBuilder = new RequestMessageBuilder(SOURCE, CLIENT_CERT_USER_ID);
+                LogDebug("Source: " + SOURCE + " Client Cert UserID: " + CLIENT_CERT_USER_ID);
+                RequestMessage requestmsg = requestBuilder.GetSystemStatusRequestMessage();
+                LogDebug("Attempting to call Ercot SystemStatus service...");
+                LogDebug("RequestMessage: " + requestmsg);
+                ResponseMessage response = _ercotClient.MarketInfo(requestmsg);
+                return response.Reply.ReplyCode;
+            }
+            catch (System.Web.Services.Protocols.SoapHeaderException she) {
+                LogError(she);
+                LogDebug(she);
+                throw new Exception($"From {System.Reflection.MethodBase.GetCurrentMethod().ToString()}: SOAP Header Exception...");
+            }
+
+            catch (System.Reflection.TargetInvocationException te) {
+                LogError(te);
+                LogDebug(te);
+                throw new Exception($"From {System.Reflection.MethodBase.GetCurrentMethod().ToString()}: SOAP Header Exception...");
+            }
+
+            catch (Exception ex) {
+                LogError(ex);
+                LogDebug(ex);
+                throw new Exception($"From {System.Reflection.MethodBase.GetCurrentMethod().ToString()}: SOAP Header Exception...");
+            }
+
+        } // end GetSystemStatus() method
 
         /// <summary>
         /// GetRtmLmps
         /// </summary>
         /// <returns></returns>
-        public List<Lmp> GetRtmLmps()
-        {
+        public List<Lmp> GetRtmLmps() {
             LogDebug("Calling GetRtmLmps() method...");
             _marketCallType = MarketInfoCallType.LMPs;
-            try
-            {
+            try {
                 RequestMessageBuilder requestBuilder = new RequestMessageBuilder(SOURCE, CLIENT_CERT_USER_ID);
-                LogDebug("Source: " +  SOURCE + " Client Cert UserID: " + CLIENT_CERT_USER_ID);
+                LogDebug("Source: " + SOURCE + " Client Cert UserID: " + CLIENT_CERT_USER_ID);
 
                 /*******************************************************
                  StartTime and EndTime must be in Central Standard Time.
@@ -195,7 +214,7 @@ namespace ErcotAPILib.MarketInfo
                  Savings Time.
                 *******************************************************/
                 RequestMessage requestmsg = requestBuilder.GetRtmLMPs(
-                    TimeZoneInfo.ConvertTime(DateTime.Now.AddMinutes(LMP_REPORT_STARTTIME_OFFSET_MINUTES), TimeZoneInfo.Local, TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time")), 
+                    TimeZoneInfo.ConvertTime(DateTime.Now.AddMinutes(LMP_REPORT_STARTTIME_OFFSET_MINUTES), TimeZoneInfo.Local, TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time")),
                     TimeZoneInfo.ConvertTime(DateTime.Now.AddMinutes(LMP_REPORT_ENDTIME_OFFSET_MINUTES), TimeZoneInfo.Local, TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time")), true, true);
 
                 //This is where the rubber meets the road. Calling the service asynchronously with the help of a Task
@@ -205,51 +224,46 @@ namespace ErcotAPILib.MarketInfo
                 // LogDebug("Ercot Get LMPs service task started...");
                 LogDebug("RequestMessage: " + requestmsg);
                 ResponseMessage response = _ercotClient.MarketInfo(requestmsg);
-                 LogDebug("Returning response.Payload");
-                 return ProcessLMPsCallResults(response.Payload);
-                
-               
+                LogDebug("Returning response.Payload");
+                return ProcessLMPsCallResults(response.Payload);
+
+
 
             }
-            catch (System.Web.Services.Protocols.SoapHeaderException she)
-            {
+            catch (System.Web.Services.Protocols.SoapHeaderException she) {
                 LogError(she);
                 LogDebug(she);
                 throw new Exception($"From {System.Reflection.MethodBase.GetCurrentMethod().ToString()}: SOAP Header Exception...");
             }
 
-            catch (System.Reflection.TargetInvocationException te)
-            {
+            catch (System.Reflection.TargetInvocationException te) {
                 LogError(te);
                 LogDebug(te);
                 throw new Exception($"From {System.Reflection.MethodBase.GetCurrentMethod().ToString()}: SOAP Header Exception...");
             }
 
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 LogError(ex);
                 LogDebug(ex);
                 throw new Exception($"From {System.Reflection.MethodBase.GetCurrentMethod().ToString()}: SOAP Header Exception...");
             }
 
-          
-           
+
+
         } // end GetRtmLmps() method
 
 
-        public string GetReport(string reportTypeID)
-        {
+        public string GetReport(string reportTypeID) {
 
             LogDebug("Calling GetReport() method...");
             _marketCallType = MarketInfoCallType.Report;
-            try
-            {
+            try {
                 RequestMessageBuilder requestBuilder = new RequestMessageBuilder(SOURCE, CLIENT_CERT_USER_ID);
                 RequestMessage requestmsg = requestBuilder.GetReports(null, null, reportTypeID);
 
-             
+
                 LogDebug("Attempting to call Ercot GetReports service...");
-              
+
                 ResponseMessage response = _ercotClient.MarketInfo(requestmsg);
                 LogDebug("Calling ExtractReportFromResponsePayload() method...");
                 Report report = ExtractReportFromResponsePayload(response.Payload);
@@ -258,26 +272,23 @@ namespace ErcotAPILib.MarketInfo
                 LogDebug("Extracting csv report contents from zip file...");
                 string csv_report_contents = sc.ExtractCsvFileForReportInMemory(report);
                 return csv_report_contents;
-              
+
 
 
             }
-            catch (System.Web.Services.Protocols.SoapHeaderException she)
-            {
+            catch (System.Web.Services.Protocols.SoapHeaderException she) {
                 LogError(she);
                 LogDebug(she);
                 throw new Exception($"From {System.Reflection.MethodBase.GetCurrentMethod().ToString()}: SOAP Header Exception...");
             }
 
-            catch (System.Reflection.TargetInvocationException te)
-            {
+            catch (System.Reflection.TargetInvocationException te) {
                 LogError(te);
                 LogDebug(te);
                 throw new Exception($"From {System.Reflection.MethodBase.GetCurrentMethod().ToString()}: SOAP Header Exception...");
             }
 
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 LogError(ex);
                 LogDebug(ex);
                 throw new Exception($"From {System.Reflection.MethodBase.GetCurrentMethod().ToString()}: SOAP Header Exception...");
@@ -293,16 +304,14 @@ namespace ErcotAPILib.MarketInfo
         /// </summary>
         /// <param name="payload"></param>
         /// <returns></returns>
-        private List<Lmp> ProcessLMPsCallResults(PayloadType payload)
-        {
+        private List<Lmp> ProcessLMPsCallResults(PayloadType payload) {
             _lmpList = new List<Lmp>();
 
             XmlElement element = (XmlElement)payload.Items[0];
             XmlNodeList LmpNodes = element.GetElementsByTagName("ns1:LMP");
 
 
-            foreach (XmlNode xn in LmpNodes)
-            {
+            foreach (XmlNode xn in LmpNodes) {
                 Lmp lmp = new Lmp(xn.ChildNodes[0].InnerText, xn.ChildNodes[1].InnerText, xn.ChildNodes[2].InnerText);
                 _lmpList.Add(lmp);
             }
@@ -319,18 +328,16 @@ namespace ErcotAPILib.MarketInfo
         /// </summary>
         /// <param name="payload"></param>
         /// <returns>string representing the report's download URL</returns>
-        private string ExtractReportDownloadUrlFromResponsePayload(PayloadType payload)
-        {
+        private string ExtractReportDownloadUrlFromResponsePayload(PayloadType payload) {
             Report report = null;
 
             XmlElement element = (XmlElement)payload.Items[0];
             XmlNodeList LmpNodes = element.GetElementsByTagName("ns1:Report");
 
             LogDebug("Extracting report node...");
-            foreach (XmlNode xn in LmpNodes)
-            {
-                 report = new Report(xn);
-                 break;
+            foreach (XmlNode xn in LmpNodes) {
+                report = new Report(xn);
+                break;
             }
             LogDebug(report.ToString());
             return report.Url;
@@ -338,16 +345,14 @@ namespace ErcotAPILib.MarketInfo
         }
 
 
-        private Report ExtractReportFromResponsePayload(PayloadType payload)
-        {
+        private Report ExtractReportFromResponsePayload(PayloadType payload) {
             Report report = null;
 
             XmlElement element = (XmlElement)payload.Items[0];
             XmlNodeList LmpNodes = element.GetElementsByTagName("ns1:Report");
 
             LogDebug("Extracting report node...");
-            foreach (XmlNode xn in LmpNodes)
-            {
+            foreach (XmlNode xn in LmpNodes) {
                 report = new Report(xn);
                 break;
             }
@@ -358,8 +363,8 @@ namespace ErcotAPILib.MarketInfo
 
 
 
-      
 
 
-    }
-}
+
+    } // end class definition
+} // end namespace
